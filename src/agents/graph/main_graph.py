@@ -14,18 +14,27 @@ from langchain_core.messages import (
 )
 from utils import CONFIG
 
+
 class GraphState(TypedDict):
     messages: Annotated[Sequence[BaseMessage], add_messages]
     attachment: str
-    
+
+
 # == DEMO
 def call_model(state: GraphState):
     messages = state["messages"]
-    model = ChatZhipuAI(model=CONFIG['models']['zhipuai']['llm_model'], temperature=CONFIG['models']['zhipuai']['temperature'], streaming=True)
+    model = ChatZhipuAI(
+        model=CONFIG["models"]["zhipuai"]["llm_model"],
+        temperature=CONFIG["models"]["zhipuai"]["temperature"],
+        streaming=True,
+    )
     response = model.invoke(messages)
 
     return {"messages": [response]}
+
+
 # == END DEMO
+
 
 def get_main_graph(debug=True) -> CompiledStateGraph:
     graph = StateGraph(GraphState)
