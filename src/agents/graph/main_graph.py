@@ -12,7 +12,9 @@ from langchain_core.messages import (
     AIMessage,
     ToolMessage,
 )
-from utils import CONFIG
+
+import agents.models as models
+import agents.agents as agents
 
 
 class GraphState(TypedDict):
@@ -20,25 +22,24 @@ class GraphState(TypedDict):
     attachment: str
 
 
-# == DEMO
-def call_model(state: GraphState):
+lite_model = models.get_lite_llm()
+plus_model = models.get_plus_llm()
+vlm_model = models.get_vlm()
+
+analyzer = agents.get_analyzer_agent(lite_model)
+
+
+def analyzer_agent_node(state: GraphState):
     messages = state["messages"]
-    model = ChatZhipuAI(
-        model=CONFIG["models"]["zhipuai"]["llm_model"],
-        temperature=CONFIG["models"]["zhipuai"]["temperature"],
-        streaming=True,
-    )
-    response = model.invoke(messages)
+    attachment = state["attachment"]
+    response = analyzer.invoke({"messages": messages, "attachment": attachment})
 
     return {"messages": [response]}
 
 
-# == END DEMO
-
-
 def get_main_graph(debug=True) -> CompiledStateGraph:
     graph = StateGraph(GraphState)
-    graph.add_node("agent", call_model)
+    graph.add_node("agent", analyzer_agent_node)
     graph.set_entry_point("agent")
 
     return graph.compile(debug=debug)
