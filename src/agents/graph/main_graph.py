@@ -38,101 +38,6 @@ lite_model = models.get_lite_llm()
 plus_model = models.get_plus_llm()
 vlm_model = models.get_vlm()
 
-# checker_tools = [tools.timeseries_format_checker.TimeSeriesFormatCheckerTool()]
-# checker_tools_node = ToolNode(checker_tools)
-# checker = agents.get_checker_agent(plus_model.bind_tools(checker_tools))
-#
-# analyzer = agents.get_analyzer_agent(plus_model.bind_tools(all_tools))
-# visualizer = agents.get_analyzer_agent(vlm_model)
-#
-# tools_node = ToolNode(all_tools)
-
-
-# def checker_agent_node(state: GraphState):
-#     state["current_node"] = "checker_agent"
-#
-#     messages = state["messages"]
-#     attachment = state["attachment"]
-#     response = checker.invoke({"messages": messages, "attachment": attachment})
-#
-#     return {"messages": [response]}
-#
-# def analyzer_agent_node(state: GraphState):
-#     state["current_node"] = "analyzer_agent"
-#
-#     messages = state["messages"]
-#     attachment = state["attachment"]
-#     response = analyzer.invoke({"messages": messages, "attachment": attachment})
-#
-#     return {"messages": [response]}
-#
-#
-# def visualizer_agent_node(state: GraphState):
-#     state["current_node"] = "visualizer_agent"
-#
-#     messages = state["messages"]
-#     attachment = state["attachment"]
-#     response = visualizer.invoke({"messages": messages, "attachment": attachment})
-#
-#     return {"messages": [response]}
-
-# def router(state: GraphState):
-#     messages = state["messages"]
-#     last_message = messages[-1]
-#
-#     if state["attachment"] ==  "NO_UPLOAD_FILE":
-#         return END
-#
-#     # if isinstance(last_message, ToolMessage):
-#         # if last_message.content.find("![image]") != -1:
-#         #     pattern = re.compile(r'!\[image\]\(data:image/[^)]+?\)')
-#         #     image_list = pattern.findall(last_message.content)
-#         #
-#         #     image_b64_list = [image[9:-1] for image in image_list]
-#         #
-#         #     content = pattern.sub("[image]", last_message.content)
-#         #
-#         #     state["messages"][-1].content = [
-#         #         {
-#         #             "type": "text",
-#         #             "text": content,
-#         #         }
-#         #     ]
-#         #     for image_b64 in image_b64_list:
-#         #         state["messages"][-1].content.append(
-#         #             {
-#         #                 "type": "image_url",
-#         #                 "image_url": {"url": image_b64},
-#         #             }
-#         #         )
-#         #
-#         #     return "visualizer_agent"
-#         # else:
-#         #     return "analyzer_agent"
-#
-#     if isinstance(last_message, ToolMessage):
-#         pass
-#
-#     if last_message.tool_calls:
-#         return "tools"
-#
-#     if last_message.content.find("FINISH") != -1:
-#         return END
-#     else:
-#         return "analyzer_agent"
-
-# def checker_router(state: GraphState):
-#     messages = state["messages"]
-#     last_message = messages[-1]
-#
-#     if state["attachment"] ==  "NO_UPLOAD_FILE":
-#         return END
-#
-#     if last_message.tool_calls:
-#         return "checker_tools"
-#
-#     return "analyzer_agent"
-
 greeting_agent = agents.get_greeting_agent(lite_model)
 
 
@@ -234,17 +139,8 @@ def get_main_graph(debug=True) -> CompiledStateGraph:
     graph.add_conditional_edges("greeting_agent", greeting_router)
     graph.add_edge("checker_tools", "checker_agent")
     graph.add_edge("checker_agent", "decomposer_agent")
-    graph.add_edge("decomposer_agent", END)
 
-    # graph.add_node("checker_agent", checker_agent_node)
-    # graph.add_node("analyzer_agent", analyzer_agent_node)
-    # graph.add_node("visualizer_agent", visualizer_agent_node)
-    # graph.add_node("tools", tools_node)
-    #
-    # graph.add_edge(START, "checker_agent")
-    # graph.add_conditional_edges("checker_agent", router)
-    # graph.add_conditional_edges("analyzer_agent", router)
-    # graph.add_conditional_edges("tools", router)
-    # graph.add_edge("visualizer_agent", "analyzer_agent")
+    # DEBUG
+    graph.add_edge("decomposer_agent", END)
 
     return graph.compile(debug=debug)
