@@ -10,7 +10,7 @@ class JupyterNotebook(BaseTool):
     可以执行Python代码片段的代码执行工具，用于数据分析和可视化任务
     """
 
-    name: str = "code_execution"
+    name: str = "Python代码执行工具"
     description: str = (
         "一个专为准确执行数据分析和可视化任务而优化的Python代码执行工具"
         "用于执行执行数据分析和可视化任务的Python代码片段，包含Pandas、Numpy和Matplotlib等常见的数据分析库。"
