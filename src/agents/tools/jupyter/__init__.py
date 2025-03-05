@@ -1,3 +1,5 @@
+from typing import List, Tuple
+
 from langchain_core.tools import BaseTool
 
 from .jupyter_kernel import JupyterKernel
@@ -17,11 +19,12 @@ class JupyterNotebook(BaseTool):
         "代码将会使用Jupyter Notebook的方式执行，代码上下文在执行后会被保留。"
         "为了更好的渲染表格数据，请使用df.to_markdown()方法将Pandas DataFrame转换为Markdown格式输出。"
     )
+    response_format: str = "content_and_artifact"
 
     def _run(
         self,
         code: str,
-    ) -> str:
+    ) -> Tuple[str, List[str]]:
 
         code = (
             """
@@ -30,6 +33,7 @@ import numpy as np
 import pandas as pd
 import seaborn as sns
 import scipy.stats as stats
+%matplotlib inline
 
 plt.rcParams['font.sans-serif'] = ['Arial Unicode MS']
 
@@ -37,5 +41,5 @@ plt.rcParams['font.sans-serif'] = ['Arial Unicode MS']
             + code
         )
 
-        result, _ = kernel.execute_code(code)
-        return result
+        result, _, images = kernel.execute_code(code)
+        return result, images

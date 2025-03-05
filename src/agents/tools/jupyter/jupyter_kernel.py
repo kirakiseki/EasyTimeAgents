@@ -82,6 +82,7 @@ class JupyterKernel:
 
     def execute_code(self, code):
         text_to_gpt = []
+        images = []
         content_to_display = self.execute_code_(code)
         for mark, out_str in content_to_display:
             if mark in ("stdout", "execute_result_text", "display_text"):
@@ -98,12 +99,12 @@ class JupyterKernel:
                 elif mark in ("execute_result_jpeg", "display_jpeg"):
                     b64prefix = "data:image/jpeg;base64,"
 
-                text_to_gpt.append(f"![image]({b64prefix}{out_str})")
+                images.append(f"{b64prefix}{out_str}")
 
             elif mark == "error":
                 text_to_gpt.append(delete_color_control_char(out_str))
 
-        return "\n".join(text_to_gpt), content_to_display
+        return "\n".join(text_to_gpt), content_to_display, images
 
     def _create_work_dir(self):
         init_code = (
