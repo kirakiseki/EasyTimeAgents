@@ -1,13 +1,15 @@
 import streamlit as st
 import inspect
+
+from langchain_core.messages import BaseMessage, ToolMessage
 from streamlit.delta_generator import DeltaGenerator
 from streamlit.runtime.scriptrunner import add_script_run_ctx, get_script_run_ctx
 from langchain_core.callbacks.base import BaseCallbackHandler
-from typing import Dict, Any, TypeVar, Callable
+from typing import Dict, Any, TypeVar, Callable, List
 
 
 def tool_call_inputs_renderer(args: Dict[str, Any]) -> str:
-    return "\n".join(f"{k}: {v}" for k, v in args.items())
+    return "\n".join(f"{k}: \n{v}" for k, v in args.items())
 
 
 def get_streamlit_callback_handler(
@@ -23,6 +25,7 @@ def get_streamlit_callback_handler(
             self.tool_container = None
             self.tool_status = None
             self.tool_output_placeholder = None
+            self.tool_output_artifacts_placeholder = None
             self.text = initial_text
 
         def on_llm_new_token(self, token: str, **kwargs) -> None:
@@ -47,6 +50,7 @@ def get_streamlit_callback_handler(
                 st.code(tool_call_inputs_renderer(inputs))
                 st.write("工具输出: ")
                 self.tool_output_placeholder = st.empty()
+                self.tool_output_artifacts_placeholder = st.empty()
 
         def on_tool_end(self, output: Any, **kwargs: Any) -> Any:
             with self.tool_status as s:
@@ -54,6 +58,23 @@ def get_streamlit_callback_handler(
 
                 if self.tool_output_placeholder:
                     self.tool_output_placeholder.code(output.content)
+
+                if (
+                    self.tool_output_artifacts_placeholder
+                    and output.artifact is not None
+                    and len(output.artifact) > 0
+                ):
+                    for artifact in output.artifact:
+                        self.tool_output_artifacts_placeholder.image(artifact)
+
+        def on_chat_model_start(
+            self,
+            serialized: Dict[str, Any],
+            messages: List[List[BaseMessage]],
+            **kwargs: Any,
+        ) -> Any:
+            self.text += "\n\n\n"
+            self.content_container.write(self.text)
 
     fn_return_type = TypeVar("fn_return_type")
 
