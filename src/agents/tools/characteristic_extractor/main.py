@@ -31,7 +31,7 @@ Stationarity（平稳性）: {self.Stationarity}
 
 def characteristic_extractor(data_path: str) -> CharacteristicExtractResult:
 
-    dummy = "./tests/dummy_chars_etth1_tfb.csv"
+    dummy = "upload/dummy_chars_etth1_tfb.csv"
     df = pd.read_csv(dummy)  # shape: 1x6
 
     return CharacteristicExtractResult(
